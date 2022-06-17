@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
-import { USERS } from '../data';
 import { IUser } from '../interfaces';
+
+const USERS: Array<IUser> = [];
 
 export function findAllUsersInDataBase() {
   return new Promise((resolve, reject) => {
@@ -47,7 +48,6 @@ export function updateUserInDatabase(
       hobbies: hobbies || USERS[userIndex].hobbies,
     };
     USERS.splice(userIndex, 1, updateUser);
-    console.log('update users', USERS);
     resolve(updateUser);
   });
 }
