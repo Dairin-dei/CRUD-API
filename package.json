@@ -4,7 +4,8 @@
   "private": true,
   "start": "nodemon ./src/index.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest --silent --forceExit --runInBand",
+    "test-coverage": "jest --coverage --silent --forceExit  --runInBand",
     "start:dev": "nodemon ./src/index.ts",
     "start:prod": "npm run build && npm run prod",
     "prod": "node dist/main.js",
@@ -36,7 +37,8 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/dist/"
     ],
     "transform": {},
     "transformIgnorePatterns": [
