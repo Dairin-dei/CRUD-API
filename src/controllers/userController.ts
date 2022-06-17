@@ -79,6 +79,18 @@ export async function createNewUser(
               "Hello. I'm sorry, but I couldn't add new user. You should fill all fields: username, age and hobbies",
           })
         );
+      } else if (
+        isNaN(Number(age)) ||
+        username.trim() === '' ||
+        !Array.isArray(hobbies)
+      ) {
+        response.writeHead(500, { 'content-Type': 'application/json' });
+        response.end(
+          JSON.stringify({
+            message:
+              "Hello. I'm sorry, but I couldn't add new user. You should send non-empty username, convertible to number age and array-like hobbies",
+          })
+        );
       } else {
         const newUser = await createNewUserInDatabase(username, age, hobbies);
 
@@ -113,17 +125,40 @@ export async function updateUser(
       let body = '';
       request.on('data', (chunk) => {
         body += chunk.toString();
-      });
-      request.on('end', async () => {
-        const { username, age, hobbies } = JSON.parse(body);
-        const updateUser = await updateUserInDatabase(
-          userId,
-          username,
-          age,
-          hobbies
-        );
-        response.writeHead(200, { 'content-Type': 'application/json' });
-        response.end(JSON.stringify(updateUser));
+        request.on('end', async () => {
+          try {
+            const { username, age, hobbies } = JSON.parse(body);
+            if (
+              (username !== undefined && username.trim() === '') ||
+              (age !== undefined && isNaN(age)) ||
+              (hobbies !== undefined && !Array.isArray(hobbies))
+            ) {
+              response.writeHead(500, { 'content-Type': 'application/json' });
+              response.end(
+                JSON.stringify({
+                  message:
+                    "Hello. I'm sorry, but I couldn't add new user. You should send non-empty username and/or convertible to number age, and/or array-like hobbies",
+                })
+              );
+            } else {
+              const updateUser = await updateUserInDatabase(
+                userId,
+                username,
+                age,
+                hobbies
+              );
+              response.writeHead(200, { 'content-Type': 'application/json' });
+              response.end(JSON.stringify(updateUser));
+            }
+          } catch {
+            response.writeHead(400, { 'content-Type': 'application/json' });
+            response.end(
+              JSON.stringify({
+                message: `Hello. You quite possibly have mistakes in sent data. Please check`,
+              })
+            );
+          }
+        });
       });
     } else {
       response.writeHead(404, { 'content-Type': 'application/json' });
@@ -157,7 +192,7 @@ export async function deleteUser(
     const user = await findUserByIdInDataBase(userId);
     if (user != undefined) {
       removeUserFromDatabase(user as IUser);
-      response.writeHead(400, { 'content-Type': 'application/json' });
+      response.writeHead(204, { 'content-Type': 'application/json' });
       response.end(
         JSON.stringify({
           message: `Hello. User with id ${userId} was deleted`,
